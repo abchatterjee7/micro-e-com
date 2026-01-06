@@ -1,0 +1,243 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - microservices-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - microservices-net
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: microservices
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-net
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - microservices-net
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - microservices-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.5
+    container_name: keycloak
+    command: start-dev --http-enabled=true
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/microservices
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: admin
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/health/ready || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - microservices-net
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8095:8095"
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/micro-e-com-realm/protocol/openid-connect/certs
+      ORDER_SERVICE_URL: http://order-service:8097
+      DLT_REPLAY_SERVICE_URL: http://dlt-replay-service:8088
+      PRODUCT_SERVICE_URL: http://product-service:8090
+    depends_on:
+      - keycloak
+      - redis
+    restart: unless-stopped
+    networks:
+      - microservices-net
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    ports:
+      - "8097:8097"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/microservices
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/micro-e-com-realm/protocol/openid-connect/certs
+    depends_on:
+      - postgres
+      - kafka
+      - keycloak
+    restart: unless-stopped
+    networks:
+      - microservices-net
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "8098:8098"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/microservices
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/micro-e-com-realm/protocol/openid-connect/certs
+    depends_on:
+      - postgres
+      - kafka
+      - redis
+      - keycloak
+    restart: unless-stopped
+    networks:
+      - microservices-net
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8099:8099"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/microservices
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/micro-e-com-realm/protocol/openid-connect/certs
+    depends_on:
+      - postgres
+      - kafka
+      - keycloak
+    restart: unless-stopped
+    networks:
+      - microservices-net
+
+  dlt-replay-service:
+    build: ./dlt-replay-service
+    container_name: dlt-replay-service
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/micro-e-com-realm/protocol/openid-connect/certs
+    depends_on:
+      - kafka
+      - keycloak
+    restart: unless-stopped
+    networks:
+      - microservices-net
+
+  product-service:
+    build: ./product-service
+    container_name: product-service
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/product_db
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/micro-e-com-realm/protocol/openid-connect/certs
+    depends_on:
+      - mongo
+      - keycloak
+    restart: unless-stopped
+    networks:
+      - microservices-net
+
+  auth-microservice:
+    build: ./auth-microservice
+    container_name: auth-microservice
+    ports:
+      - "8096:8096"
+    environment:
+      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: micro-e-com-realm
+      KEYCLOAK_ADMIN_CLIENT_ID: backend-service
+      KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:-}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/microservices
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+    depends_on:
+      - keycloak
+      - postgres
+    restart: unless-stopped
+    networks:
+      - microservices-net
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_BASE_URL: http://localhost:8095
+      VITE_RAZORPAY_KEY_ID: rzp_test_damILfDssLwsZg
+      VITE_KEYCLOAK_CLIENT_ID: micro-e-com-frontend-client
+      VITE_KEYCLOAK_REALM: micro-e-com-realm
+      VITE_KEYCLOAK_AUTH_SERVER_URL: http://localhost:8080
+      VITE_KEYCLOAK_REDIRECT_URI: http://localhost:5173
+      VITE_KEYCLOAK_POST_LOGOUT_REDIRECT_URI: http://localhost:5173
+    networks:
+      - microservices-net
+
+networks:
+  microservices-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mongo_data:

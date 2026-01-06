@@ -1,0 +1,7 @@
+C:\Studies\code\microservices-code\micro-e-com\auth-microservice\src\main\java\org\aadi\auth_microservice\AuthMicroserviceApplication.java
+C:\Studies\code\microservices-code\micro-e-com\auth-microservice\src\main\java\org\aadi\auth_microservice\config\AuthSecurityConfig.java
+C:\Studies\code\microservices-code\micro-e-com\auth-microservice\src\main\java\org\aadi\auth_microservice\config\KeycloakConfig.java
+C:\Studies\code\microservices-code\micro-e-com\auth-microservice\src\main\java\org\aadi\auth_microservice\controller\AuthController.java
+C:\Studies\code\microservices-code\micro-e-com\auth-microservice\src\main\java\org\aadi\auth_microservice\domain\LoginRequest.java
+C:\Studies\code\microservices-code\micro-e-com\auth-microservice\src\main\java\org\aadi\auth_microservice\domain\UserRole.java
+C:\Studies\code\microservices-code\micro-e-com\auth-microservice\src\main\java\org\aadi\auth_microservice\service\AuthService.java

@@ -1,0 +1,6 @@
+C:\Studies\code\microservices-code\micro-e-com\api-gateway\src\main\java\org\aadi\api_gateway\ApiGatewayApplication.java
+C:\Studies\code\microservices-code\micro-e-com\api-gateway\src\main\java\org\aadi\api_gateway\config\GatewayJwtConfig.java
+C:\Studies\code\microservices-code\micro-e-com\api-gateway\src\main\java\org\aadi\api_gateway\config\GatewayRoutesConfig.java
+C:\Studies\code\microservices-code\micro-e-com\api-gateway\src\main\java\org\aadi\api_gateway\config\GatewaySecurityConfig.java
+C:\Studies\code\microservices-code\micro-e-com\api-gateway\src\main\java\org\aadi\api_gateway\config\JwtRoleConfig.java
+C:\Studies\code\microservices-code\micro-e-com\api-gateway\src\main\java\org\aadi\api_gateway\controller\AuthFallbackController.java
