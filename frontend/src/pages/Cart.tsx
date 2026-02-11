@@ -1,3 +1,4 @@
+import { Trash } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -33,7 +34,14 @@ const Cart = () => {
                                     <p>₹{item.price}</p>
                                 </div>
                             </div>
-                            <button onClick={() => removeFromCart(index)} className="text-red-500 hover:text-red-700">Remove</button>
+                            <button
+                                onClick={() => removeFromCart(index)}
+                                className="flex items-center gap-1 text-red-500 hover:text-red-700 cursor-pointer outline-2 outline-offset-2 outline-pink-500 hover:bg-black px-2 py-1"
+                            >
+                                <Trash className="inline-block" />
+                                <span>Remove</span>
+                            </button>
+
                         </div>
                     ))}
                     <div className="mt-6 flex justify-between items-center">

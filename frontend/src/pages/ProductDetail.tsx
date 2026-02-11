@@ -38,7 +38,7 @@ const ProductDetail = () => {
                     <p className="mb-4">{product.description}</p>
                     <p className="mb-4 text-sm text-gray-500">Category: {product.category}</p>
                     <p className="mb-4 text-sm text-gray-500">Stock: {product.stock}</p>
-                    <button onClick={addToCart} className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">
+                    <button onClick={addToCart} className="bg-pink-500 text-white px-6 py-3 rounded hover:bg-pink-700">
                         Add to Cart
                     </button>
                 </div>

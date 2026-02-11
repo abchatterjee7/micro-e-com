@@ -11,6 +11,7 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
+import CategoryPage from './pages/CategoryPage';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
@@ -27,6 +28,7 @@ function App() {
             <Routes>
               <Route path="/" element={<ProductList />} />
               <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/category/:categoryName" element={<CategoryPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/cart" element={<Cart />} />

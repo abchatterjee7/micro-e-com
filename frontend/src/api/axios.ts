@@ -11,6 +11,14 @@ api.interceptors.request.use(async (config) => {
         try {
             await keycloak.updateToken(30);
             config.headers.Authorization = `Bearer ${keycloak.token}`;
+            
+            // Debug: Log token details
+            console.log('Token Debug:', {
+                token: keycloak.token,
+                parsed: keycloak.tokenParsed,
+                roles: keycloak.tokenParsed?.realm_access?.roles,
+                hasRoles: !!(keycloak.tokenParsed?.realm_access?.roles && keycloak.tokenParsed.realm_access.roles.length > 0)
+            });
         } catch (error) {
             console.error('Failed to update token', error);
             keycloak.login();

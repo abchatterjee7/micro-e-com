@@ -2,6 +2,8 @@ package org.aadi.order_service.repo;
 
 import org.aadi.order_service.domain.Order;
 import org.aadi.order_service.domain.OrderStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Instant;
@@ -17,4 +19,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             OrderStatus status,
             Instant cutoff
     );
+    
+    Page<Order> findByCustomerId(String customerId, Pageable pageable);
 }

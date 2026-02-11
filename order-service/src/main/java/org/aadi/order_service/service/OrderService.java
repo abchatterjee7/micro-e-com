@@ -1,13 +1,17 @@
 package org.aadi.order_service.service;
 
+import org.aadi.order_service.controller.OrderController.OrderResponse;
 import org.aadi.order_service.domain.Order;
 import org.aadi.order_service.domain.OutboxEvent;
 import org.aadi.order_service.repo.OrderRepository;
 import org.aadi.order_service.repo.OutboxRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Service
@@ -56,6 +60,15 @@ public class OrderService {
         }
 
 
+    }
+
+    public Page<OrderResponse> getOrdersByCustomerId(String customerId, Pageable pageable) {
+        Page<Order> orders = orderRepository.findByCustomerId(customerId, pageable);
+        return orders.map(order -> new OrderResponse(
+            order.getId(),
+            order.getStatus().toString(),
+            DateTimeFormatter.ISO_INSTANT.format(order.getCreatedAt())
+        ));
     }
 
     private String buildPayload(UUID orderId, String customerId) {

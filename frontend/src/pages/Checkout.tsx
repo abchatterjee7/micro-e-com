@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import api from '../api/axios';
 
 declare global {
   interface Window {
@@ -20,6 +21,33 @@ const Checkout = () => {
             navigate('/login');
         }
     }, [isAuthenticated, navigate]);
+
+    const createOrder = async () => {
+        try {
+            // Generate a unique idempotency key for this order
+            const idempotencyKey = `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            
+            // Get user ID from token or context
+            const userId = user?.sub || user?.id || user?.username || 'anonymous';
+            
+            const response = await api.post('/api/orders', {}, {
+                headers: {
+                    'Idempotency-Key': idempotencyKey,
+                    'X-User-Id': userId
+                }
+            });
+            
+            console.log('Order created:', response.data);
+            
+            // Clear cart after successful order creation
+            localStorage.removeItem('cart');
+            navigate('/order-success');
+        } catch (error: any) {
+            console.error('Failed to create order:', error);
+            alert('Order creation failed. Please contact support.');
+            // Don't clear cart if order creation fails
+        }
+    };
 
     const handlePayment = () => {
         // Check if Razorpay is loaded
@@ -46,8 +74,8 @@ const Checkout = () => {
             image: "/logo.png",
             handler: function (response: any) {
                 alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}`);
-                localStorage.removeItem('cart');
-                navigate('/order-success');
+                // Create order after successful payment
+                createOrder();
             },
             prefill: {
                 name: user?.firstName || user?.username || "Customer",

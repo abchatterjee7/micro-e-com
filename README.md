@@ -297,15 +297,16 @@ docker-compose logs -f product-service
 ### Code Structure
 ```
 micro-e-com/
-├── api-gateway/          # Spring Cloud Gateway
+├── api-gateway/           # Spring Cloud Gateway
 ├── auth-microservice/     # Authentication facade
-├── product-service/        # Product catalog management
+├── product-service/       # Product catalog management
 ├── order-service/         # Order processing & sagas
-├── payment-service/        # Razorpay integration
-├── notification-service/   # Event-driven notifications
-├── dlt-replay-service/   # Failed event handling
+├── payment-service/       # Razorpay integration
+├── notification-service/  # Event-driven notifications
+├── dlt-replay-service/    # Failed event handling
 ├── frontend/              # React + TypeScript UI
-└── KEYCLOAK_SETUP.md     # Authentication setup guide
+├── README.md              # General Readme file
+└── KEYCLOAK_SETUP.md      # Authentication setup guide
 ```
 
 ### Environment Variables
@@ -373,7 +374,6 @@ This project is licensed under the MIT License © 2026 Aaditya B Chatterjee
 
 ## Pending main task
 - order history (with delivery status, pagination) & status updation by admin
-- products display by category
 - user profile image upload & mobile number update
 - wishlist
 - ratings & feedback
